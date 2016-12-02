@@ -57,7 +57,7 @@ function setIframe(link) {
     <div class="sidebar">
         <div class="section entry-section">
             <h1>Where to?</h1>
-            <p class="std-text subtle">Please enter your start and end locations.</p>
+            <p class="std-text subtle">Please enter you start and end locations.</p>
 
             <div class="form-area">
                 <p class="input-label">Start</p>
