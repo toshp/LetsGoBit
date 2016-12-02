@@ -11,7 +11,7 @@
 <meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1.0">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
     
-<title>CS 411 - Group 2</title>
+<title>LET'S GO BIT</title>
 
 <link rel="stylesheet" type="text/css" href="../stylesheets/411-style.css">
     
