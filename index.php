@@ -62,7 +62,7 @@ function setIframe(link) {
     <div class="sidebar">
         <div class="section entry-section">
             <h1>Where to?</h1>
-            <p class="std-text subtle">Please enter your start and end locations.</p>
+            <p class="std-text subtle" id="subtext">Please enter your start and end locations.</p>
 
             <div class="form-area">
                 <p class="input-label">Start</p>
@@ -149,6 +149,8 @@ function showMap() {
     $(".poi-holder").css({"opacity":"0", "display":"none"});  
     $(".map-frame").removeClass("blur");
     $(".sidebar").removeClass("grayscale");
+
+    $("#subtext").html("Please select your via point.");
 
     var realURL = $('.map-frame').contents().find('meta[itemprop=image]').attr("content");
     var m = realURL.indexOf("markers=");
