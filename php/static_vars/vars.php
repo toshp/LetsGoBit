@@ -8,4 +8,10 @@ if (mysqli_connect_errno()) {
   echo "Failed to connect to MySQL: " . mysqli_connect_error();
 }
 
+$hash = "sha256";
+
+$active = "active";
+
+$inactive = "inactive";
+
 ?>

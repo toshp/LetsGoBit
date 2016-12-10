@@ -55,7 +55,7 @@ for ($i = 0; $i < count($array); $i++) {
 	$html .= '<div class="poi-item">
                     <img src="'.$pic.'" class="poi-img" />
                     <div class="poi-item-text">
-                        <a class="poi-add" onclick="addToRoute(\''.$loc.'\', \''.$name.'\')">Add to Route</a>
+                        <a class="poi-add" onclick="addToRoute(\''.$loc.'\', \''.mysqli_real_escape_string($con, $name).'\')">Add to Route</a>
 
                         <p class="poi-name">'.$name.'</p>
                         <p class="poi-rating">Rated '.$rating.'/5</p>

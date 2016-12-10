@@ -1,3 +1,23 @@
+<?php
+
+ob_start();
+session_start();
+session_regenerate_id();
+
+require('php/static_vars/vars.php');
+require('php/user_mgmt/authenticate.php');
+
+$user_id = false;
+$email = false;
+$phone = false;
+
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+    $email = $_SESSION['email'];
+    $phone = $_SESSION['phone_number'];
+}
+?>
+
 <!DOCTYPE html>
 <html>
 
@@ -13,7 +33,7 @@
     
 <title>LET'S GO BIT</title>
 
-<link rel="stylesheet" type="text/css" href="../stylesheets/411-style.css?v=1.1">
+<link rel="stylesheet" type="text/css" href="stylesheets/411-style.css?v=1.8">
     
 <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
 
@@ -23,6 +43,7 @@ var g_sw_corner = "";
 var g_ne_corner = "";
 var g_start;
 var g_end;
+var g_f_link;
 
 function setIframe(link) {
 
@@ -54,18 +75,65 @@ function setIframe(link) {
     loadURL(link);
 }
 
+function showSignUp() {
+    $(".entry-section").css({"display":"none"});
+    $(".signin-section").css({"display":"none"});
+    $(".signup-section").css({"display":"block"});
+}
+
+function showMain() {
+    $(".signup-section").css({"display":"none"});
+    $(".signin-section").css({"display":"none"});
+    $(".entry-section").css({"display":"block"});
+}
+
+function showSignIn() {
+    $(".entry-section").css({"display":"none"});
+    $(".signup-section").css({"display":"none"});
+    $(".signin-section").css({"display":"block"});
+}
+
+<?php
+if ($user_id != false) {
+    echo '
+    function sendRoute() {
+        var route = $(".link-preview").attr("href");
+
+        $.ajax( {
+            url:"php/user_mgmt/send_route.php",
+            data: "route=" + route,
+            method: "POST",
+            success:function(msg) {
+                alert("Sent to phone!");
+                $(".send-button").css({"display":"none"});
+            }
+        }); 
+    }';
+} else {
+    echo '
+    function sendRoute() {
+        showSignUp();
+    }';
+}
+    
+?>
+
 </script>
 </head>
     
 <body>
     
     <div class="sidebar">
+        
         <div class="section entry-section">
-            <h1>Where to?</h1>
+            <h1 id="title">Where to?</h1>
             <p class="std-text subtle" id="subtext">Please enter your start and end locations.</p>
 
+            <a class="link-preview" href="#" target="_blank"></a>    
+            
             <div class="form-area">
                 <p class="input-label">Start</p>
+                <div class="input-cover"></div>
                 <input class="input-text start-loc" type="text" />
 
                 <div class="poi-box">
@@ -80,15 +148,78 @@ function setIframe(link) {
                 </div>
 
                 <p class="input-label">End</p>
+                <div class="input-cover"></div>
                 <input class="input-text end-loc" type="text" />
             </div>
 
             <img class="load-icon hide" src="images/ellipsis.svg" />
 
-            <a class="input-submit" onclick="findRoute();">Go!</a>
+            <a class="input-submit go-button" onclick="findRoute();">Go!</a>
+            <a class="input-submit fin-button" onclick="finalizeRoute();">Finalize</a>
+            <a class="input-submit send-button" onclick="sendRoute();">Text Me Route</a>
+            <a class="input-submit redo-button hide-spot" onclick="location.reload();">Edit Start/End</a>
 
         </div> <!-- section -->
 
+        <div class="section signup-section">
+            <h1>Sign Up</h1>
+            <p class="std-text subtle">Sign up to send directions to your phone.</p>
+
+            
+            <div class="form-area">
+                <form action="php/user_mgmt/signup.php" method="post">
+                    <p class="input-label">Email</p>
+                    <input class="input-text" name="email" type="email" />
+
+                    <p class="input-label">Phone Number</p>
+                    <input class="input-text" name="phone" type="text" />
+
+                    <p class="input-label">Password</p>
+                    <input class="input-text" name="password" type="password" />
+
+                    <input class="input-submit" type="submit" value="Sign Up" />
+                </form>
+            </div>
+        </div> <!-- section -->
+
+        <div class="section signin-section">
+            <h1>Sign In</h1>
+            <p class="std-text subtle">Sign in to send directions to your phone.</p>
+
+            
+            <div class="form-area">
+                <form action="php/user_mgmt/signin.php" method="post">
+                    <p class="input-label">Email</p>
+                    <input class="input-text" name="email" type="email" />
+
+                    <p class="input-label">Password</p>
+                    <input class="input-text" name="password" type="password" />
+
+                    <input class="input-submit" type="submit" value="Sign In" />
+                </form>
+            </div>
+        </div> <!-- section -->
+
+        <p class="logo"><span style="cursor:pointer" onclick="showMain();">LetsGoBit<span style="color:#aaa">.ch</span> </span>
+
+        <?php
+
+        if ($user_id == false) {
+            echo '
+                <span class="account-opts">
+                    <a class="account-button" onclick="showSignUp();">Sign Up</a>
+                    <a class="account-button" onclick="showSignIn();">Sign In</a>
+                </span>';
+        } else {
+            echo '
+                <span class="account-opts">
+                    <a class="account-button" style="text-decoration:none;">'.$email.'</a>
+                    <a class="account-button" href="php/user_mgmt/signout.php">Sign Out</a>
+                </span>';
+        }
+
+        ?>
+        </p>
     </div> <!-- sidebar -->
 
     <div class="glass"></div>
@@ -144,13 +275,14 @@ function showMap() {
     $(".glass").addClass("clear-glass");
     $(".load-icon").addClass("hide");
     $(".poi-box").css({"display":"block"});
-    $(".input-submit").removeClass("hide-spot");
+    $(".redo-button").removeClass("hide-spot");
 
     $(".poi-holder").css({"opacity":"0", "display":"none"});  
     $(".map-frame").removeClass("blur");
-    $(".sidebar").removeClass("grayscale");
 
     $("#subtext").html("Please select your via point.");
+    $(".input-cover").css({"display":"block"});
+    $(".go-button").css({"display":"none"});
 
     var realURL = $('.map-frame').contents().find('meta[itemprop=image]').attr("content");
     var m = realURL.indexOf("markers=");
@@ -229,7 +361,6 @@ function showMap() {
 
 function showPOI() {
     $(".map-frame").addClass("blur");
-    $(".sidebar").addClass("grayscale");
     $(".poi-holder").css({"display":"block"}).animate({
         "opacity":"1"
     }, 200);
@@ -264,8 +395,25 @@ function addToRoute(loc, name) {
 
     $(".via-name").html(name);
     $(".via-box").css({"display":"block"});
+    $(".fin-button").removeClass("hide-spot");
+    $(".fin-button").css({"display":"inline-block"});
     $(".poi-box-button p").html("Change Via Point");
     setIframe(link);
+
+    g_f_link = link;
+}
+
+function finalizeRoute() {
+    $("#title").html("Your trip.");
+    $("#subtext").html("Here is the link for directions.");
+    $(".poi-box-button").css({"display":"none"});
+    $(".via-box").css({"padding-bottom":"5px"});
+
+    $(".redo-button").html("Plan New Trip");
+    $(".fin-button").css({"display":"none"});
+    $(".send-button").removeClass("hide-spot").css({"display":"inline-block"});
+
+    $(".link-preview").css({"display":"block"}).html("http://google.com/maps/...").attr("href", g_f_link);
 }
 
    </script>
